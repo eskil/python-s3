@@ -158,7 +158,7 @@ class AWSAuthConnection(object):
     def __init__(self, aws_access_key_id, aws_secret_access_key,
             is_secure=True, server=DEFAULT_HOST, port=None,
             calling_format=CallingFormat.SUBDOMAIN,
-            spool_size=MAX_MEM_FILE_SIZE):
+            spool_size=MAX_MEM_FILE_SIZE, timeout=None):
 
         if not port:
             port = PORTS_BY_SECURITY[is_secure]
@@ -170,6 +170,7 @@ class AWSAuthConnection(object):
         self.port = port
         self.calling_format = calling_format
         self.spool_size = spool_size
+        self.timeout = timeout
 
     def create_bucket(self, bucket, headers=None):
         return Response(self._make_request('PUT', bucket, '', {}, headers))
@@ -279,9 +280,9 @@ class AWSAuthConnection(object):
         host = "%s:%d" % (server, self.port)
         while True:
             if (is_secure):
-                connection = httplib.HTTPSConnection(host)
+                connection = httplib.HTTPSConnection(host, timeout=self.timeout)
             else:
-                connection = httplib.HTTPConnection(host)
+                connection = httplib.HTTPConnection(host, timeout=self.timeout)
 
             final_headers = merge_meta(headers, metadata)
             # add auth header
